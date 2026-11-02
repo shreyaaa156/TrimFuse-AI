@@ -1,0 +1,33 @@
+========================================================================================
+1) MCU predictive trim (train MCU-A wafers, test held-out MCU-A wafers)
+  bg trim code                 exact  75.8% | within ±1  97.9% | iterations conv  6.6 -> AI 1.35
+  hsi trim code                exact  47.3% | within ±1  80.4% | iterations conv  7.6 -> AI 2.70
+  ldo trim code                exact  89.4% | within ±1  99.9% | iterations conv  5.6 -> AI 1.11
+  conventional trim time 28.7 ms/die
+
+2) MCU drift-aware targets + transfer learning (bandgap sort->final shift)
+  zero-shot (MCU-A model on MCU-C): MAE  1.73 mV
+  fine-tuned with 50 MCU-C dies:    MAE  0.86 mV
+  MCU-C bandgap final pass: trim to 1.200 V  90.9% -> trim to offset target  99.4%
+
+3) PMIC: predict all four rail codes from the reference measurement + PCM only
+  buck1 code (no rail meas.)   exact  38.3% | within ±1  84.0% | iterations conv  6.3 -> AI 2.42
+  buck2 code (no rail meas.)   exact  39.0% | within ±1  85.4% | iterations conv  6.3 -> AI 2.34
+  ldo1 code (no rail meas.)    exact  44.2% | within ±1  91.3% | iterations conv  6.3 -> AI 2.00
+  ldo2 code (no rail meas.)    exact  40.3% | within ±1  83.4% | iterations conv  6.3 -> AI 2.43
+
+4) Sensor: predict temperature coefficients from room-temperature data
+  tco_x_true_mg_per_C          R2   0.84
+  tcs_x_true_ppm_per_C         R2   0.94
+  residual offset at 85 C (RMS mg): no TC comp  12.8 | AI 1-insertion   6.5
+
+5) SoC: predict slowest-core Fmax from monitors (reduces functional speed test)
+  slowest-core Fmax R2   0.97
+  rule-based SKU mix: {'SoC-Std': 0.797, 'SoC-Pro': 0.144, 'SoC-Lite': 0.057, 'scrap': 0.003}
+
+6) Fuse-map validation (schema rules + join to sort trim codes)
+  detection: 406/406 errors caught, 0 false alarms
+
+7) Memory repair: greedy vs exact allocation
+  repairable: greedy  61.4% | exact  62.0% | arrays saved by exact solver 17
+========================================================================================
